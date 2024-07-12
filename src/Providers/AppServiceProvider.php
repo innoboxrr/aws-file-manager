@@ -10,7 +10,7 @@ class AppServiceProvider extends ServiceProvider
     public function register()
     {
         
-        // $this->mergeConfigFrom(__DIR__ . '/../../config/innoboxrrawsfilemanager.php', 'innoboxrrawsfilemanager');
+        $this->mergeConfigFrom(__DIR__ . '/../../config/aws-file-manager.php', 'aws-file-manager');
 
     }
 
@@ -25,7 +25,7 @@ class AppServiceProvider extends ServiceProvider
             
             // $this->publishes([__DIR__.'/../../resources/views' => resource_path('views/vendor/innoboxrrawsfilemanager'),], 'views');
 
-            // $this->publishes([__DIR__.'/../../config/innoboxrrawsfilemanager.php' => config_path('innoboxrrawsfilemanager.php')], 'config');
+            $this->publishes([__DIR__.'/../../config/aws-file-manager.php' => config_path('aws-file-manager.php')], 'config');
 
         }
 

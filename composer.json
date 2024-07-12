@@ -3,7 +3,8 @@
     "license": "MIT",
     "autoload": {
         "psr-4": {
-            "Innoboxrr\\AwsFileManager\\": "src/"
+            "Innoboxrr\\AwsFileManager\\": "src/",
+            "Innoboxrr\\AwsFileManager\\Database\\Factories\\": "database/factories/"
         }
     },
     "authors": [
@@ -12,7 +13,6 @@
             "email": "h.raulvc@gmail.com"
         }
     ],
-    "require": [],
     "extra": {
         "laravel": {
             "providers": [
@@ -22,5 +22,17 @@
                 "Innoboxrr\\AwsFileManager\\Providers\\RouteServiceProvider"
             ]
         }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Innoboxrr\\AwsFileManager\\Tests\\": "tests/"
+        }
+    },
+    "require-dev": {
+        "orchestra/testbench": "^8.0",
+        "innoboxrr/larapack-generator": "^4.0"
+    },
+    "require": {
+        "league/flysystem-aws-s3-v3": "^3.28"
     }
 }
