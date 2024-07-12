@@ -22,7 +22,7 @@ class RouteServiceProvider extends ServiceProvider
 
             $name = basename($file, '.php');
 
-            Route::middleware('api')
+            Route::middleware(['web'])
                 ->prefix('afm/' . $name)
                 ->as('afm.' . $name . '.')
                 ->namespace('Innoboxrr\AwsFileManager\Http\Controllers')

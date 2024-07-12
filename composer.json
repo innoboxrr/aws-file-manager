@@ -34,6 +34,7 @@
     },
     "require": {
         "league/flysystem-aws-s3-v3": "^3.28",
-        "aws/aws-sdk-php": "^3.316"
+        "aws/aws-sdk-php": "^3.316",
+        "intervention/image": "^3.7"
     }
 }
