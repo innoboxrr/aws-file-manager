@@ -2,4 +2,4 @@
 
 use Illuminate\Support\Facades\Route;
 
-Route::get('file-manager/index', 'FileManagerController@index');
+Route::get('index', 'FileManagerController@index')->name('index');

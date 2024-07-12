@@ -8,24 +8,48 @@ use Illuminate\Http\Request;
 class FileManagerController extends Controller
 {
     
+    private $s3Client;
+
     public function __construct()
     {
-        $this->middleware('auth:sanctum');
+        $this->s3Client = new S3Client([
+            'version' => 'latest',
+            'region' => env('AWS_DEFAULT_REGION'),
+            'credentials' => [
+                'key' => env('AWS_ACCESS_KEY_ID'),
+                'secret' => env('AWS_SECRET_ACCESS_KEY'),
+            ],
+        ]);
     }
 
-    public function listFilesWithMetadata()
+    public function index(Request $request)
     {
-        $disk = Storage::disk(config('aws-file-manager.disk')); // Recupera el disco configurado
-        $files = $disk->allFiles(); // Recupera todos los archivos en el bucket
+        $bucket = env('AWS_BUCKET');
+        $directory = $request->input('directory', 'public'); // Directorio de entrada (por defecto es vacío)
 
-        foreach ($files as $file) {
-            $metadata = $disk->getMetaData($file);
-            
-            echo "Archivo: {$file}\n";
-            echo "Metadata: " . json_encode($metadata) . "\n";
-            echo "Tamaño: {$metadata['size']} bytes\n";
-            echo "Última modificación: " . date('Y-m-d H:i:s', $metadata['timestamp']) . "\n";
-            echo str_repeat("-", 60) . "\n";
+        $results = $this->s3Client->listObjectsV2([
+            'Bucket' => $bucket,
+            'Prefix' => $directory, // Especifica el prefijo para el directorio de entrada
+        ]);
+
+        dd($results);
+
+        if (isset($results['Contents'])) {
+            foreach ($results['Contents'] as $object) {
+                $key = $object['Key'];
+                $metadata = $this->s3Client->headObject([
+                    'Bucket' => $bucket,
+                    'Key' => $key,
+                ]);
+
+                echo "Archivo: {$key}\n";
+                echo "Metadata: " . json_encode($metadata['Metadata']) . "\n";
+                echo "Tamaño: {$metadata['ContentLength']} bytes\n";
+                echo "Última modificación: {$metadata['LastModified']}\n";
+                echo str_repeat("-", 60) . "\n";
+            }
+        } else {
+            echo "No se encontraron archivos en el bucket.";
         }
     }
 

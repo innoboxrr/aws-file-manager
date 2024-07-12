@@ -33,6 +33,7 @@
         "innoboxrr/larapack-generator": "^4.0"
     },
     "require": {
-        "league/flysystem-aws-s3-v3": "^3.28"
+        "league/flysystem-aws-s3-v3": "^3.28",
+        "aws/aws-sdk-php": "^3.316"
     }
 }
