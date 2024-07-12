@@ -1,0 +1,25 @@
+# Ignore Composer dependencies
+/vendor/
+
+# Ignore node dependencies
+/node_modules/
+
+# Ignore build artifacts
+/build/
+/dist/
+
+# Ignore OS generated files
+.DS_Store
+Thumbs.db
+
+# Ignore IDE and editor config files
+/.idea/
+/.vscode/
+/*.code-workspace
+
+# Ignore logs and temp files
+*.log
+*.tmp
+
+# Ignore environment variables
+.env

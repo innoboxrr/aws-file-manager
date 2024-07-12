@@ -1,0 +1,16 @@
+# Ensure all text files use LF line endings
+* text=auto
+
+# Handle binary files
+*.jpg binary
+*.png binary
+*.gif binary
+*.pdf binary
+
+# Specific to Composer
+/composer.phar binary
+
+# Ensure consistent Git behavior for specific files
+*.md text
+*.json text
+*.yml text

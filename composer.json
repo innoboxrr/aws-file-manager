@@ -1,0 +1,6 @@
+{
+    "require-dev": {
+        "orchestra/testbench": "^8.0",
+        "innoboxrr/larapack-generator": "^4.0"
+    }
+}
