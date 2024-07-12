@@ -1,6 +1,16 @@
 {
-    "require-dev": {
-        "orchestra/testbench": "^8.0",
-        "innoboxrr/larapack-generator": "^4.0"
-    }
+    "name": "innoboxrr/aws-file-manager",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Innoboxrr\\AwsFileManager\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Homero Raul",
+            "email": "h.raulvc@gmail.com"
+        }
+    ],
+    "require": {}
 }
