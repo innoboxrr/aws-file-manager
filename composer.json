@@ -12,5 +12,15 @@
             "email": "h.raulvc@gmail.com"
         }
     ],
-    "require": {}
+    "require": [],
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Innoboxrr\\AwsFileManager\\Providers\\AppServiceProvider",
+                "Innoboxrr\\AwsFileManager\\Providers\\AuthServiceProvider",
+                "Innoboxrr\\AwsFileManager\\Providers\\EventServiceProvider",
+                "Innoboxrr\\AwsFileManager\\Providers\\RouteServiceProvider"
+            ]
+        }
+    }
 }
