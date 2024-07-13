@@ -1,8 +1,8 @@
 <?php
+
 namespace Innoboxrr\AwsFileManager\Services;
 
 use Aws\S3\S3Client;
-use Intervention\Image\ImageManagerStatic as Image;
 
 class S3Service
 {
@@ -112,21 +112,20 @@ class S3Service
         }
     }
 
-    public function getImageAttributes($bucket, $key)
+    public function getSignedUrl($bucket, $key)
     {
-        $cmd = $this->s3Client->getCommand('GetObject', [
-            'Bucket' => $bucket,
-            'Key' => $key,
-        ]);
+        try {
+            $cmd = $this->s3Client->getCommand('GetObject', [
+                'Bucket' => $bucket,
+                'Key' => $key
+            ]);
 
-        $request = $this->s3Client->createPresignedRequest($cmd, '+20 minutes');
-        $url = (string)$request->getUri();
+            $request = $this->s3Client->createPresignedRequest($cmd, '+20 minutes');
 
-        $image = Image::make($url);
-
-        return [
-            'dimensions' => $image->width() . ' x ' . $image->height(),
-            'resolution' => $image->dpi(),
-        ];
+            return (string)$request->getUri();
+        } catch (AwsException $e) {
+            // Manejar la excepción si es necesario
+            return null;
+        }
     }
 }

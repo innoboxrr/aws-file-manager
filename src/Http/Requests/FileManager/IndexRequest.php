@@ -119,6 +119,7 @@ class IndexRequest extends FormRequest
             'name' => basename($key),
             'size' => $this->s3Service->formatSizeUnits($metadata['ContentLength']),
             'source' => $baseUrl . '/' . $key,
+            'signedSource' => $this->s3Service->getSignedUrl($bucket, $key),
             'current' => false,
             'information' => [
                 'type' => MimeTypeMapper::getMimeTypeFromContent($metadata['ContentType']),
@@ -128,10 +129,10 @@ class IndexRequest extends FormRequest
             ],
         ];
 
+        // Si es una imagen, agrega información adicional
         if (strpos($metadata['ContentType'], 'image') !== false) {
-            $imageAttributes = $this->s3Service->getImageAttributes($bucket, $key);
-            $file['information']['dimensions'] = $imageAttributes['dimensions'];
-            $file['information']['resolution'] = $imageAttributes['resolution'];
+            $file['information']['dimensions'] = null; // No se puede obtener dinámicamente
+            $file['information']['resolution'] = null; // No se puede obtener dinámicamente
         }
 
         return $file;
