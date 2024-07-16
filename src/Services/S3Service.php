@@ -94,8 +94,10 @@ class S3Service
     {
         $root = rtrim(config('aws-file-manager.root'), '/');
         $directory = trim($inputDirectory, '/');
-        return $root . '/' . $userId . '/' . $directory;
+        $fullPath = $root . '/' . $userId . '/' . $directory;
+        return rtrim($fullPath, '/') . '/';
     }
+
 
     public function directoryExists($bucket, $directory)
     {
@@ -132,9 +134,14 @@ class S3Service
             $request = $this->s3Client->createPresignedRequest($cmd, '+20 minutes');
 
             return (string)$request->getUri();
-        } catch (AwsException $e) {
+        } catch (\Exception $e) {
             // Manejar la excepción si es necesario
             return null;
         }
+    }
+
+    public function getObjectUrl($bucket, $key)
+    {
+        return $this->s3Client->getObjectUrl($bucket, $key);
     }
 }

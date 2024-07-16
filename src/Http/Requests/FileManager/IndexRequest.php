@@ -58,6 +58,7 @@ class IndexRequest extends FormRequest
         }
 
         $results = $this->s3Service->listObjects($bucket, $directory);
+
         $files = $this->processFiles($results, $bucket, $baseUrl, $directory);
 
         return response()->json([
@@ -119,7 +120,8 @@ class IndexRequest extends FormRequest
             'name' => basename($key),
             'size' => $this->s3Service->formatSizeUnits($metadata['ContentLength']),
             'source' => $baseUrl . '/' . $key,
-            'signedSource' => $this->s3Service->getSignedUrl($bucket, $key),
+            'signedUrl' => $this->s3Service->getSignedUrl($bucket, $key),
+            'url' => $this->s3Service->getObjectUrl($bucket, $key),
             'current' => false,
             'information' => [
                 'type' => MimeTypeMapper::getMimeTypeFromContent($metadata['ContentType']),
@@ -130,10 +132,12 @@ class IndexRequest extends FormRequest
         ];
 
         // Si es una imagen, agrega información adicional
+        /*
         if (strpos($metadata['ContentType'], 'image') !== false) {
             $file['information']['dimensions'] = null; // No se puede obtener dinámicamente
             $file['information']['resolution'] = null; // No se puede obtener dinámicamente
         }
+        */
 
         return $file;
     }
