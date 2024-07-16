@@ -2,8 +2,8 @@
 
 namespace Innoboxrr\AwsFileManager\Http\Controllers;
 
-use Innoboxrr\AwsFileManager\Http\Requests\FileManager\ChangeVisibilityRequest;
-use Innoboxrr\AwsFileManager\Http\Requests\FileManager\DeleteFileRequest;
+use Innoboxrr\AwsFileManager\Http\Requests\File\ChangeVisibilityRequest;
+use Innoboxrr\AwsFileManager\Http\Requests\File\DeleteFileRequest;
 
 class FileController extends Controller
 {

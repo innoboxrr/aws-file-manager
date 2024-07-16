@@ -1,6 +1,6 @@
 <?php
 
-namespace Innoboxrr\AwsFileManager\Http\Requests\FileManager;
+namespace Innoboxrr\AwsFileManager\Http\Requests\File;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Innoboxrr\AwsFileManager\Services\S3Service;
@@ -40,16 +40,12 @@ class ChangeVisibilityRequest extends FormRequest
     public function handle()
     {
         $bucket = config('aws-file-manager.bucket');
-        $userId = auth()->id();
-        $fileKey = $this->s3Service->currentDir($userId, $this->input('file'));
+        // Eliminar la primera barra diagonal solo si existe
+        $fileKey = ltrim($this->input('file'), '/');
         $visibility = $this->input('visibility') === 'public' ? 'public-read' : 'private';
 
         // Cambiar la visibilidad del archivo en S3
-        $this->s3Service->s3Client->putObjectAcl([
-            'Bucket' => $bucket,
-            'Key' => $fileKey,
-            'ACL' => $visibility,
-        ]);
+        $this->s3Service->putObjectAcl($bucket, $fileKey, $visibility);
 
         return response()->json(['message' => 'File visibility changed successfully.']);
     }

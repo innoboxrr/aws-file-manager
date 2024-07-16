@@ -50,6 +50,15 @@ class S3Service
         ]);
     }
 
+    public function putObjectAcl($bucket, $key, $acl)
+    {
+        return $this->s3Client->putObjectAcl([
+            'Bucket' => $bucket,
+            'Key' => $key,
+            'ACL' => $acl,
+        ]);
+    }
+
     public function determineVisibility($acl)
     {
         foreach ($acl['Grants'] as $grant) {

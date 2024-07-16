@@ -1,6 +1,6 @@
 <?php
 
-namespace Innoboxrr\AwsFileManager\Http\Requests\FileManager;
+namespace Innoboxrr\AwsFileManager\Http\Requests\File;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Innoboxrr\AwsFileManager\Services\S3Service;
