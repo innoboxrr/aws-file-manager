@@ -23,15 +23,18 @@ class UploadRequest extends FormRequest
     public function rules()
     {
         return [
-            'file' => 'required|file',
-            'directory' => 'required|string',
+            'files' => 'required|array',
+            'files.*' => 'required|file',
+            'directory' => 'nullable|string',
+            'visibility' => 'nullable|string|in:private,public-read',
         ];
     }
 
     public function messages()
     {
         return [
-            'file.required' => 'Please provide a file to upload.',
+            'files.required' => 'Please provide files to upload.',
+            'files.*.required' => 'Please provide a file to upload.',
             'directory.required' => 'Please provide a directory.',
         ];
     }
@@ -41,17 +44,21 @@ class UploadRequest extends FormRequest
         $bucket = config('aws-file-manager.bucket');
         $userId = auth()->id();
         $directory = $this->s3Service->currentDir($userId, $this->input('directory', ''));
-        $file = $this->file('file');
-        $filePath = $directory . '/' . $file->getClientOriginalName();
+        $files = $this->file('files');
 
-        // Subir el archivo a S3
-        $this->s3Service->s3Client->putObject([
-            'Bucket' => $bucket,
-            'Key' => $filePath,
-            'Body' => fopen($file->getRealPath(), 'r'),
-            'ACL' => 'private', // O 'public-read' si deseas que el archivo sea público
-        ]);
+        $responses = [];
 
-        return response()->json(['message' => 'File uploaded successfully.']);
+        foreach ($files as $file) {
+
+            $filePath = $directory . $file->getClientOriginalName();
+            $body = fopen($file->getRealPath(), 'r');
+            $acl = $this->input('visibility', 'private');
+
+            $this->s3Service->putObject($bucket, $filePath, $body, $acl);
+
+            $responses[] = ['message' => 'File uploaded successfully.', 'file' => $filePath];
+        }
+
+        return response()->json($responses);
     }
 }

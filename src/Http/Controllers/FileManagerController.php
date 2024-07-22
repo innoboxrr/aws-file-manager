@@ -4,7 +4,7 @@ namespace Innoboxrr\AwsFileManager\Http\Controllers;
 
 use Innoboxrr\AwsFileManager\Http\Requests\FileManager\IndexRequest;
 use Innoboxrr\AwsFileManager\Http\Requests\FileManager\UploadRequest;
-use Innoboxrr\AwsFileManager\Http\Requests\FileManager\CreateDirRequest;
+use Innoboxrr\AwsFileManager\Http\Requests\FileManager\CreateDirectoryRequest;
 
 class FileManagerController extends Controller
 {
@@ -24,7 +24,7 @@ class FileManagerController extends Controller
         return $request->handle();
     }
 
-    public function createDirectory(CreateDirRequest $request)
+    public function createDirectory(CreateDirectoryRequest $request)
     {
         return $request->handle();
     }

@@ -59,6 +59,16 @@ class S3Service
         ]);
     }
 
+    public function putObject($bucket, $key, $body, $acl)
+    {
+        return $this->s3Client->putObject([
+            'Bucket' => $bucket,
+            'Key' => $key,
+            'Body' => $body,
+            'ACL' => $acl,
+        ]);
+    }
+
     public function determineVisibility($acl)
     {
         foreach ($acl['Grants'] as $grant) {
@@ -97,7 +107,6 @@ class S3Service
         $fullPath = $root . '/' . $userId . '/' . $directory;
         return rtrim($fullPath, '/') . '/';
     }
-
 
     public function directoryExists($bucket, $directory)
     {
