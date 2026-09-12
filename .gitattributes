@@ -1,3 +1,7 @@
+# Sin esto, un clon en Windows convierte todo a CRLF y el diff contra el mismo
+# archivo en Linux sale entero.
+* text=auto eol=lf
+
 # Ensure all text files use LF line endings
 * text=auto
 
