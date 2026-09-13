@@ -2,6 +2,7 @@
 
 namespace Innoboxrr\AwsFileManager\Http\Requests\FileManager;
 
+use Aws\S3\Exception\S3Exception;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Innoboxrr\AwsFileManager\Services\S3Service;
@@ -47,8 +48,15 @@ class UploadRequest extends FormRequest
         $bucket = config('aws-file-manager.bucket');
         $userId = auth()->id();
         $directory = $this->s3Service->currentDir($userId, $this->input('directory', ''));
+        $visibility = Visibility::normalize($this->input('visibility'));
+
+        // Sin ACL no hay forma de hacer publico un objeto desde aqui. Se dice
+        // antes de subir nada, en lugar de guardarlo privado en silencio.
+        if ($visibility === Visibility::PUBLIC && ! $this->s3Service->usesAcl()) {
+            throw Visibility::aclsDisabled();
+        }
+
         $files = $this->file('files');
-        $acl = Visibility::toAcl($this->input('visibility'));
 
         $responses = [];
 
@@ -57,7 +65,11 @@ class UploadRequest extends FormRequest
             $filePath = $directory . $file->getClientOriginalName();
             $body = fopen($file->getRealPath(), 'r');
 
-            $this->s3Service->putObject($bucket, $filePath, $body, $acl, $file->getMimeType());
+            try {
+                $this->s3Service->putObject($bucket, $filePath, $body, Visibility::toAcl($visibility), $file->getMimeType());
+            } catch (S3Exception $e) {
+                throw Visibility::isAclRejection($e) ? Visibility::bucketRejectsAcls() : $e;
+            }
 
             $responses[] = ['message' => 'File uploaded successfully.', 'file' => $filePath];
         }

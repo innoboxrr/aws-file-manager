@@ -29,6 +29,15 @@ class S3Service
         ]);
     }
 
+    /**
+     * Si la visibilidad se maneja con ACL de objeto. Ver `use_acl` en la
+     * configuracion.
+     */
+    public function usesAcl(): bool
+    {
+        return (bool) config('aws-file-manager.use_acl', false);
+    }
+
     public function listObjects($bucket, $directory)
     {
         return $this->s3Client->listObjectsV2([
@@ -63,14 +72,19 @@ class S3Service
         ]);
     }
 
-    public function putObject($bucket, $key, $body, $acl, $contentType = null)
+    public function putObject($bucket, $key, $body, $acl = null, $contentType = null)
     {
         $params = [
             'Bucket' => $bucket,
             'Key' => $key,
             'Body' => $body,
-            'ACL' => $acl,
         ];
+
+        // Un bucket con los ACL desactivados rechaza el parametro, incluso
+        // `private`: solo se manda cuando la configuracion dice que se usan.
+        if ($acl !== null && $this->usesAcl()) {
+            $params['ACL'] = $acl;
+        }
 
         // Sin ContentType S3 guarda binary/octet-stream: el navegador descarga
         // la imagen en lugar de mostrarla y el indice no sabe de que tipo es.

@@ -5,6 +5,7 @@ namespace Innoboxrr\AwsFileManager\Http\Requests\FileManager;
 use Illuminate\Foundation\Http\FormRequest;
 use Innoboxrr\AwsFileManager\Support\Utils\MimeTypeMapper;
 use Innoboxrr\AwsFileManager\Services\S3Service;
+use Innoboxrr\AwsFileManager\Support\Visibility;
 
 class IndexRequest extends FormRequest
 {
@@ -100,7 +101,11 @@ class IndexRequest extends FormRequest
                 }
 
                 $metadata = $this->s3Service->getObjectMetadata($bucket, $key);
-                $acl = $this->s3Service->getObjectAcl($bucket, $key);
+
+                // Con los ACL desactivados no hay ACL que leer: quien decide si un
+                // archivo es publico es la politica del bucket.
+                $acl = $this->s3Service->usesAcl() ? $this->s3Service->getObjectAcl($bucket, $key) : null;
+
                 $file = $this->formatFileData($bucket, $key, $metadata, $baseUrl, $acl);
                 $files[] = $file;
 
@@ -127,7 +132,7 @@ class IndexRequest extends FormRequest
                 'type' => MimeTypeMapper::getMimeTypeFromContent($metadata['ContentType']),
                 'created_at' => $metadata['LastModified']->format('Y-m-d H:i:s'),
                 'updated_at' => $metadata['LastModified']->format('Y-m-d H:i:s'),
-                'visibility' => $this->s3Service->determineVisibility($acl),
+                'visibility' => $acl === null ? Visibility::PRIVATE : $this->s3Service->determineVisibility($acl),
             ],
         ];
 

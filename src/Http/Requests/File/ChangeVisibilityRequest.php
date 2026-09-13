@@ -2,6 +2,7 @@
 
 namespace Innoboxrr\AwsFileManager\Http\Requests\File;
 
+use Aws\S3\Exception\S3Exception;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Innoboxrr\AwsFileManager\Services\S3Service;
@@ -45,8 +46,17 @@ class ChangeVisibilityRequest extends FormRequest
         // Eliminar la primera barra diagonal solo si existe
         $fileKey = ltrim($this->input('file'), '/');
 
-        // Cambiar la visibilidad del archivo en S3
-        $this->s3Service->putObjectAcl($bucket, $fileKey, Visibility::toAcl($this->input('visibility')));
+        // Sin ACL la visibilidad no se cambia desde aqui: un 422 que lo explica
+        // en lugar del error de AWS.
+        if (! $this->s3Service->usesAcl()) {
+            throw Visibility::aclsDisabled();
+        }
+
+        try {
+            $this->s3Service->putObjectAcl($bucket, $fileKey, Visibility::toAcl($this->input('visibility')));
+        } catch (S3Exception $e) {
+            throw Visibility::isAclRejection($e) ? Visibility::bucketRejectsAcls() : $e;
+        }
 
         return response()->json(['message' => 'File visibility changed successfully.']);
     }

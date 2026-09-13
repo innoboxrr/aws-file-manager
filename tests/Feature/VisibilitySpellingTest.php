@@ -7,6 +7,14 @@ use PHPUnit\Framework\Attributes\Test;
 
 final class VisibilitySpellingTest extends FeatureTestCase
 {
+    protected function defineEnvironment($app): void
+    {
+        parent::defineEnvironment($app);
+
+        // Las dos formas se prueban contra un bucket que admite ACL.
+        $app['config']->set('aws-file-manager.use_acl', true);
+    }
+
     #[Test]
     public function la_subida_acepta_public_y_public_read(): void
     {
