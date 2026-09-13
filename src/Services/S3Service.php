@@ -8,14 +8,18 @@ class S3Service
 {
     private $s3Client;
 
-    public function __construct()
+    /**
+     * El cliente se puede inyectar para que la aplicacion o los tests decidan
+     * contra que S3 se habla. Sin el, se construye con la configuracion.
+     */
+    public function __construct(?S3Client $s3Client = null)
     {
-        $this->initializeS3Client();
+        $this->s3Client = $s3Client ?? $this->makeS3Client();
     }
 
-    private function initializeS3Client()
+    private function makeS3Client(): S3Client
     {
-        $this->s3Client = new S3Client([
+        return new S3Client([
             'version' => 'latest',
             'region' => config('aws-file-manager.region'),
             'credentials' => [

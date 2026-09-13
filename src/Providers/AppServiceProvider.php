@@ -3,6 +3,7 @@
 namespace Innoboxrr\AwsFileManager\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use Innoboxrr\AwsFileManager\Services\S3Service;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -11,6 +12,10 @@ class AppServiceProvider extends ServiceProvider
     {
         
         $this->mergeConfigFrom(__DIR__ . '/../../config/aws-file-manager.php', 'aws-file-manager');
+
+        // Una sola instancia por aplicacion, y reemplazable: la aplicacion puede
+        // enlazar un S3Service con su propio cliente, y los tests uno sin red.
+        $this->app->singleton(S3Service::class, fn () => new S3Service());
 
     }
 

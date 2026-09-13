@@ -13,7 +13,7 @@ class IndexRequest extends FormRequest
     public function __construct()
     {
         parent::__construct();
-        $this->s3Service = new S3Service();
+        $this->s3Service = app(S3Service::class);
     }
 
     public function authorize()
