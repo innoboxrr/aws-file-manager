@@ -40,6 +40,9 @@ class CreateDirectoryRequest extends FormRequest
         $userId = auth()->id();
         $directory = $this->s3Service->currentDir($userId, $this->input('directory', ''));
 
+        // Validar que el usuario no cree nada fuera de su directorio
+        $this->s3Service->validateUserPath(config('aws-file-manager.root'), $userId, $directory);
+
         // Crear el directorio en S3
         if (!$this->s3Service->directoryExists($bucket, $directory)) {
             $this->s3Service->createDirectory($bucket, $directory);

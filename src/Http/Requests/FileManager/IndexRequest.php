@@ -25,7 +25,7 @@ class IndexRequest extends FormRequest
     public function rules()
     {
         return [
-            // Añade reglas de validación si es necesario
+            'directory' => 'nullable|string',
         ];
     }
 
@@ -78,6 +78,7 @@ class IndexRequest extends FormRequest
                 if ($prefix['Prefix'] !== rtrim($directory, '/') . '/') {
                     $files[] = [
                         'name' => basename(rtrim($prefix['Prefix'], '/')),
+                        'key' => $prefix['Prefix'],
                         'size' => 'N/A',
                         'source' => null,
                         'current' => false,
@@ -123,6 +124,8 @@ class IndexRequest extends FormRequest
     {
         $file = [
             'name' => basename($key),
+            // La clave que aceptan borrar y cambiar la visibilidad.
+            'key' => $key,
             'size' => $this->s3Service->formatSizeUnits($metadata['ContentLength']),
             'source' => $baseUrl . '/' . $key,
             'signedUrl' => $this->s3Service->getSignedUrl($bucket, $key),

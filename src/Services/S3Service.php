@@ -3,6 +3,7 @@
 namespace Innoboxrr\AwsFileManager\Services;
 
 use Aws\S3\S3Client;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 
 class S3Service
 {
@@ -145,6 +146,36 @@ class S3Service
         return rtrim($fullPath, '/') . '/';
     }
 
+    /**
+     * La carpeta del usuario dentro del bucket, con la barra final.
+     */
+    public function userRoot($userId): string
+    {
+        return rtrim(config('aws-file-manager.root'), '/') . '/' . $userId . '/';
+    }
+
+    /**
+     * La clave de un archivo del usuario.
+     *
+     * Acepta la clave completa del bucket, como la devuelven la subida y el
+     * indice (`file-manager/1/docs/a.txt`), o una ruta relativa a la carpeta
+     * del usuario (`docs/a.txt`). Una clave que empieza por la raiz del gestor
+     * y no es de su carpeta es un 403: no se reinterpreta como relativa.
+     */
+    public function userFileKey($userId, $path): string
+    {
+        $root = rtrim(config('aws-file-manager.root'), '/');
+        $key = ltrim(str_replace('\\', '/', (string) $path), '/');
+
+        if (! str_starts_with($key, $root . '/')) {
+            $key = $this->userRoot($userId) . $key;
+        }
+
+        $this->validateUserPath($root, $userId, $key);
+
+        return $key;
+    }
+
     public function directoryExists($bucket, $directory)
     {
         $results = $this->listObjects($bucket, $directory);
@@ -161,11 +192,20 @@ class S3Service
         ]);
     }
 
+    /**
+     * Que la ruta quede dentro de la carpeta del usuario, o un 403.
+     *
+     * Se compara con la barra final, porque `file-manager/1` es prefijo de
+     * `file-manager/10`, y se rechazan los segmentos `..`: S3 no los resuelve,
+     * pero una URL o un CDN delante del bucket si.
+     */
     public function validateUserPath($root, $userId, $path)
     {
-        $userRoot = $root . '/' . $userId;
-        if (strpos($path, $userRoot) !== 0) {
-            throw new \Exception("Access to this path is denied.");
+        $userRoot = rtrim($root, '/') . '/' . $userId . '/';
+        $path = str_replace('\\', '/', (string) $path);
+
+        if (! str_starts_with(rtrim($path, '/') . '/', $userRoot) || in_array('..', explode('/', $path), true)) {
+            throw new AccessDeniedHttpException('Access to this path is denied.');
         }
     }
 

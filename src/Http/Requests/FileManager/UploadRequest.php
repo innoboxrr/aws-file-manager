@@ -48,6 +48,10 @@ class UploadRequest extends FormRequest
         $bucket = config('aws-file-manager.bucket');
         $userId = auth()->id();
         $directory = $this->s3Service->currentDir($userId, $this->input('directory', ''));
+
+        // Validar que el usuario no suba nada fuera de su directorio
+        $this->s3Service->validateUserPath(config('aws-file-manager.root'), $userId, $directory);
+
         $visibility = Visibility::normalize($this->input('visibility'));
 
         // Sin ACL no hay forma de hacer publico un objeto desde aqui. Se dice

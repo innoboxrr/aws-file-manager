@@ -37,11 +37,10 @@ class DeleteFileRequest extends FormRequest
     public function handle()
     {
         $bucket = config('aws-file-manager.bucket');
-        $userId = auth()->id();
 
-        // currentDir() devuelve la forma de un directorio, con `/` al final; la
-        // clave de un archivo no la lleva.
-        $fileKey = rtrim($this->s3Service->currentDir($userId, $this->input('file')), '/');
+        // La clave completa o una ruta relativa a la carpeta del usuario; fuera
+        // de ella es un 403.
+        $fileKey = $this->s3Service->userFileKey(auth()->id(), $this->input('file'));
 
         $this->s3Service->deleteObject($bucket, $fileKey);
 

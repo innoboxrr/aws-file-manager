@@ -43,8 +43,10 @@ class ChangeVisibilityRequest extends FormRequest
     public function handle()
     {
         $bucket = config('aws-file-manager.bucket');
-        // Eliminar la primera barra diagonal solo si existe
-        $fileKey = ltrim($this->input('file'), '/');
+
+        // Solo archivos de la carpeta del usuario: cualquier otra clave del
+        // bucket es un 403.
+        $fileKey = $this->s3Service->userFileKey(auth()->id(), $this->input('file'));
 
         // Sin ACL la visibilidad no se cambia desde aqui: un 422 que lo explica
         // en lugar del error de AWS.
@@ -55,6 +57,10 @@ class ChangeVisibilityRequest extends FormRequest
         try {
             $this->s3Service->putObjectAcl($bucket, $fileKey, Visibility::toAcl($this->input('visibility')));
         } catch (S3Exception $e) {
+            if ($e->getAwsErrorCode() === 'NoSuchKey') {
+                return response()->json(['message' => 'File not found.'], 404);
+            }
+
             throw Visibility::isAclRejection($e) ? Visibility::bucketRejectsAcls() : $e;
         }
 
