@@ -3,7 +3,9 @@
 namespace Innoboxrr\AwsFileManager\Http\Requests\File;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 use Innoboxrr\AwsFileManager\Services\S3Service;
+use Innoboxrr\AwsFileManager\Support\Visibility;
 
 class ChangeVisibilityRequest extends FormRequest
 {
@@ -24,7 +26,7 @@ class ChangeVisibilityRequest extends FormRequest
     {
         return [
             'file' => 'required|string',
-            'visibility' => 'required|string|in:private,public',
+            'visibility' => ['required', 'string', Rule::in(Visibility::ACCEPTED)],
         ];
     }
 
@@ -33,7 +35,7 @@ class ChangeVisibilityRequest extends FormRequest
         return [
             'file.required' => 'Please provide a file key.',
             'visibility.required' => 'Please provide a visibility setting.',
-            'visibility.in' => 'The visibility must be either private or public.',
+            'visibility.in' => 'The visibility must be private, public or public-read.',
         ];
     }
 
@@ -42,10 +44,9 @@ class ChangeVisibilityRequest extends FormRequest
         $bucket = config('aws-file-manager.bucket');
         // Eliminar la primera barra diagonal solo si existe
         $fileKey = ltrim($this->input('file'), '/');
-        $visibility = $this->input('visibility') === 'public' ? 'public-read' : 'private';
 
         // Cambiar la visibilidad del archivo en S3
-        $this->s3Service->putObjectAcl($bucket, $fileKey, $visibility);
+        $this->s3Service->putObjectAcl($bucket, $fileKey, Visibility::toAcl($this->input('visibility')));
 
         return response()->json(['message' => 'File visibility changed successfully.']);
     }
