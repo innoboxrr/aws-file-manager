@@ -37,7 +37,8 @@
         "league/flysystem-aws-s3-v3": "^3.28",
         "aws/aws-sdk-php": "^3.316",
         "php": "^8.3",
-        "illuminate/support": "^13.0"
+        "laravel/framework": "^13.0",
+        "laravel/sanctum": "^4.3"
     },
     "description": "Paquete Laravel para gestionar archivos en AWS S3."
 }
