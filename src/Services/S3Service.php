@@ -63,14 +63,22 @@ class S3Service
         ]);
     }
 
-    public function putObject($bucket, $key, $body, $acl)
+    public function putObject($bucket, $key, $body, $acl, $contentType = null)
     {
-        return $this->s3Client->putObject([
+        $params = [
             'Bucket' => $bucket,
             'Key' => $key,
             'Body' => $body,
             'ACL' => $acl,
-        ]);
+        ];
+
+        // Sin ContentType S3 guarda binary/octet-stream: el navegador descarga
+        // la imagen en lugar de mostrarla y el indice no sabe de que tipo es.
+        if ($contentType !== null) {
+            $params['ContentType'] = $contentType;
+        }
+
+        return $this->s3Client->putObject($params);
     }
 
     /**

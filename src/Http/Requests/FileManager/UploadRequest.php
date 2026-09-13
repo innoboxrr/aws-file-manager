@@ -54,7 +54,7 @@ class UploadRequest extends FormRequest
             $body = fopen($file->getRealPath(), 'r');
             $acl = $this->input('visibility', 'private');
 
-            $this->s3Service->putObject($bucket, $filePath, $body, $acl);
+            $this->s3Service->putObject($bucket, $filePath, $body, $acl, $file->getMimeType());
 
             $responses[] = ['message' => 'File uploaded successfully.', 'file' => $filePath];
         }
