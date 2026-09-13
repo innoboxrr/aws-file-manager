@@ -2,92 +2,72 @@
 
 namespace Innoboxrr\AwsFileManager\Providers;
 
-use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\ServiceProvider;
 
+/**
+ * Hereda de ServiceProvider y no del EventServiceProvider de Foundation: aquel
+ * registra al arrancar otro listener SendEmailVerificationNotification para
+ * Registered, y con uno por paquete la aplicacion mandaba el correo de
+ * verificacion repetido.
+ *
+ * Los observers no se descubren aqui: cada modelo declara el suyo con
+ * #[ObservedBy]. Este proveedor solo enlaza los eventos de Http/Events.
+ */
 class EventServiceProvider extends ServiceProvider
 {
-    public function boot()
+
+    public function boot(): void
     {
-        $this->registerEventsAndObservers();
+        $this->registerEvents();
     }
 
-    private function registerEventsAndObservers()
+    protected function registerEvents(): void
     {
-        // Sin cache a proposito: la clave `events_and_observers` la compartian
-        // otros paquetes, y leerla al arrancar rompe `php artisan migrate` con
-        // CACHE_STORE=database antes de que exista la tabla `cache`.
-        $data = [
-            'events' => $this->customDiscoverEvents(),
-            'observers' => $this->customDiscoverObservers(),
-        ];
-
-        foreach ($data['events'] as $event => $listeners) {
+        // Sin cache a proposito: leerla al arrancar rompe `php artisan migrate`
+        // con CACHE_STORE=database antes de que exista la tabla `cache`.
+        foreach ($this->discoverEvents() as $event => $listeners) {
             foreach ($listeners as $listener) {
                 Event::listen($event, $listener);
             }
         }
-
-        foreach ($data['observers'] as $model => $observer) {
-            $model::observe($observer);
-        }
     }
 
-    protected function customDiscoverEvents()
+    /**
+     * Recorre Http/Events/{Modelo}/Events/*.php y empareja cada evento con los
+     * listeners de Http/Events/{Modelo}/Listeners/{Evento}/*.php.
+     *
+     * @return array<class-string, array<int, class-string>>
+     */
+    protected function discoverEvents(): array
     {
         $events = [];
         $basePath = realpath(__DIR__ . '/../Http/Events');
+
+        // Sin la carpeta, realpath() da false y el glob recorreria la raiz del
+        // disco.
+        if ($basePath === false) {
+            return $events;
+        }
+
         $namespace = 'Innoboxrr\AwsFileManager\Http\Events\\';
 
-        // Recorremos cada directorio de modelo dentro de Events
-        $models = glob("{$basePath}/*", GLOB_ONLYDIR);
-        foreach ($models as $modelPath) {
+        foreach (glob("{$basePath}/*", GLOB_ONLYDIR) ?: [] as $modelPath) {
             $model = basename($modelPath);
 
-            // Buscamos todos los eventos para el modelo actual
-            $modelEvents = glob("{$modelPath}/Events/*.php", GLOB_BRACE);
-            foreach ($modelEvents as $eventPath) {
+            foreach (glob("{$modelPath}/Events/*.php") ?: [] as $eventPath) {
                 $eventName = pathinfo($eventPath, PATHINFO_FILENAME);
                 $eventClass = "{$namespace}{$model}\\Events\\{$eventName}";
 
-                // Buscamos todos los listeners para el evento actual
-                $listeners = glob("{$modelPath}/Listeners/{$eventName}/*.php", GLOB_BRACE);
-                foreach ($listeners as $listenerPath) {
+                foreach (glob("{$modelPath}/Listeners/{$eventName}/*.php") ?: [] as $listenerPath) {
                     $listenerName = pathinfo($listenerPath, PATHINFO_FILENAME);
-                    $listenerClass = "{$namespace}{$model}\\Listeners\\{$eventName}\\{$listenerName}";
 
-                    // Agregamos el evento y su listener al array
-                    $events[$eventClass][] = $listenerClass;
+                    $events[$eventClass][] = "{$namespace}{$model}\\Listeners\\{$eventName}\\{$listenerName}";
                 }
             }
         }
 
         return $events;
-    }
-
-    protected function customDiscoverObservers()
-    {
-        $observers = [];
-        $modelsPath = realpath(__DIR__ . '/../Models');
-        $observersPath = realpath(__DIR__ . '/../Observers');
-        $namespaceModel = 'Innoboxrr\AwsFileManager\Models\\';
-        $namespaceObserver = 'Innoboxrr\AwsFileManager\Observers\\';
-
-        // Recorremos cada archivo de modelo en el directorio Models
-        $modelFiles = glob("{$modelsPath}/*.php");
-        foreach ($modelFiles as $modelFilePath) {
-            $modelName = pathinfo($modelFilePath, PATHINFO_FILENAME);
-            $modelClass = $namespaceModel . $modelName;
-            $observerName = $modelName . 'Observer';
-            $observerClass = $namespaceObserver . $observerName;
-
-            // Comprobamos si el observador existe y lo agregamos al array
-            if (file_exists($observersPath . '/' . $observerName . '.php') && class_exists($modelClass) && class_exists($observerClass)) {
-                $observers[$modelClass] = $observerClass;
-            }
-        }
-
-        return $observers;
     }
 
 }
