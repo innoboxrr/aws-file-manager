@@ -4,7 +4,6 @@ namespace Innoboxrr\AwsFileManager\Providers;
 
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
-use Illuminate\Support\Facades\Cache;
 
 class AuthServiceProvider extends ServiceProvider
 {
@@ -16,15 +15,12 @@ class AuthServiceProvider extends ServiceProvider
 
     public function mapPolicies()
     {
-        // Define una clave única para el caché
-        $cacheKey = 'auth_policies';
+        // Sin cache a proposito. La clave `auth_policies` la compartian otros
+        // paquetes, que registraban las politicas de este y al reves, y leer la
+        // cache al arrancar rompe `php artisan migrate` en una aplicacion nueva
+        // con CACHE_STORE=database: la tabla `cache` todavia no existe.
+        $policies = $this->customDiscoverPolicies();
 
-        // Intenta recuperar el mapeo de políticas desde el caché
-        $policies = Cache::remember($cacheKey, now()->addDay(), function () {
-            return $this->customDiscoverPolicies();
-        });
-
-        // Registra las políticas
         foreach ($policies as $model => $policy) {
             Gate::policy($model, $policy);
         }
@@ -39,7 +35,7 @@ class AuthServiceProvider extends ServiceProvider
     {
         $policies = [];
 
-        foreach (glob(__DIR__ . '/../Policies/*.php') as $file) {
+        foreach (glob(__DIR__ . '/../Policies/*.php') ?: [] as $file) {
             $policy = 'Innoboxrr\AwsFileManager\Policies\\' . substr(basename($file), 0, -4);
             $model = 'Innoboxrr\AwsFileManager\Models\\' . str_replace('Policy', '', $policy);
 

@@ -4,7 +4,6 @@ namespace Innoboxrr\AwsFileManager\Providers;
 
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Event;
-use Illuminate\Support\Facades\Cache;
 
 class EventServiceProvider extends ServiceProvider
 {
@@ -15,14 +14,13 @@ class EventServiceProvider extends ServiceProvider
 
     private function registerEventsAndObservers()
     {
-        $cacheKey = 'events_and_observers';
-
-        $data = Cache::remember($cacheKey, now()->addDay(), function () {
-            return [
-                'events' => $this->customDiscoverEvents(),
-                'observers' => $this->customDiscoverObservers()
-            ];
-        });
+        // Sin cache a proposito: la clave `events_and_observers` la compartian
+        // otros paquetes, y leerla al arrancar rompe `php artisan migrate` con
+        // CACHE_STORE=database antes de que exista la tabla `cache`.
+        $data = [
+            'events' => $this->customDiscoverEvents(),
+            'observers' => $this->customDiscoverObservers(),
+        ];
 
         foreach ($data['events'] as $event => $listeners) {
             foreach ($listeners as $listener) {
