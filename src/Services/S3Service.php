@@ -73,6 +73,17 @@ class S3Service
         ]);
     }
 
+    /**
+     * El cliente es privado: quien necesita borrar lo hace a traves de aqui.
+     */
+    public function deleteObject($bucket, $key)
+    {
+        return $this->s3Client->deleteObject([
+            'Bucket' => $bucket,
+            'Key' => $key,
+        ]);
+    }
+
     public function determineVisibility($acl)
     {
         foreach ($acl['Grants'] as $grant) {
