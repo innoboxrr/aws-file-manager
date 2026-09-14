@@ -1,6 +1,8 @@
 # AWS File Manager
 
-`innoboxrr/aws-file-manager` gives every authenticated user a private folder in an S3 bucket, with a JSON API to browse it, upload files, create folders, delete files and change their visibility. It is the backend of the file manager in the admin UI that `innoboxrr/laravel-setup` installs.
+`innoboxrr/aws-file-manager` gives every authenticated user a private folder in an S3 bucket, with a JSON API to browse it, upload files, create folders, delete files and change their visibility. `innoboxrr/laravel-setup` installs it, but the base app has no file-manager screen: build your own on this API.
+
+Full documentation of the ecosystem, in Spanish and English: <https://innoboxrr.github.io/docs/paquetes/aws-file-manager>.
 
 The package has no facade. Use it through its HTTP endpoints, or resolve `S3Service` from the container for low-level access.
 
