@@ -20,14 +20,22 @@ class S3Service
 
     private function makeS3Client(): S3Client
     {
-        return new S3Client([
+        $config = [
             'version' => 'latest',
             'region' => config('aws-file-manager.region'),
-            'credentials' => [
-                'key' => config('aws-file-manager.credentials.key'),
-                'secret' => config('aws-file-manager.credentials.secret'),
-            ],
-        ]);
+        ];
+
+        $key = config('aws-file-manager.credentials.key');
+        $secret = config('aws-file-manager.credentials.secret');
+
+        // Sin llaves en la configuracion el SDK sigue su cadena de siempre:
+        // variables de entorno, perfil o el rol de la instancia. Pasarle llaves
+        // vacias la anulaba.
+        if (filled($key) && filled($secret)) {
+            $config['credentials'] = ['key' => $key, 'secret' => $secret];
+        }
+
+        return new S3Client($config);
     }
 
     /**
