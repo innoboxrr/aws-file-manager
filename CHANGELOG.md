@@ -2,6 +2,25 @@
 
 ## [Unreleased]
 
+## [2.0.1] - 2026-11-27
+
+### Cambiado
+
+- **Se desarrolla con `larapack-generator` 9.** La dependencia de desarrollo
+  pedía `^7.0` y pasa a `^9.0`, la línea base del ecosistema. Para quien
+  instala el paquete no cambia nada: `require-dev` no viaja a la aplicación.
+  Cambia lo que se instala para desarrollarlo y probarlo: `./builder` genera con
+  las plantillas de la 9 —claves ajenas en `restrict`, `managed` forzado en el
+  IndexRequest, `$appendable` en el Resource— y la CI audita contra la línea
+  base de hoy, no contra la que traía la 7.10.3.
+
+  El paquete no usa ninguna clase del generador, sólo sus comandos, y el
+  `composer.json` del generador es el mismo de la 7.10.3 a la 9.1.0: el resto
+  de lo que se resuelve no cambia. Se fija `^9.0` en vez de ampliar a
+  `^7.0 || ^8.0 || ^9.0` porque en desarrollo no hay consumidor al que dejarle
+  la 7, y el rango ancho sólo serviría para que la CI resolviera un generador
+  viejo.
+
 ## [2.0.0] - 2026-09-13
 
 Lo que necesita una aplicación nueva de Laravel 13, con un bucket creado hoy, para
